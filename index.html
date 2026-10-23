@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090b10">
+<title>Bbitcoin BBC</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090b10;color:#f5f5f5;font-family:Arial,sans-serif}
+main{max-width:440px;margin:auto;padding:20px 17px 28px}header{text-align:center;padding:18px 0 22px}
+.coin{width:122px;height:122px;margin:auto;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#fff5b5,#ffc52f 35%,#c87500 70%,#704000);box-shadow:0 0 36px #ffad0045;border:5px solid #ffe18a;position:relative}
+.coin:before{content:"";position:absolute;inset:7px;border:2px dashed #fff0a0;border-radius:50%}
+.coin span{font-size:76px;font-weight:900;color:#fff;text-shadow:3px 4px 2px #754300;z-index:1}
+h1{font-size:34px;color:#ffbd26;margin:14px 0 4px;letter-spacing:1px}.sub{color:#a9abb4;font-size:12px;letter-spacing:2px}
+.card{background:#151922;border:1px solid #303440;border-radius:17px;padding:17px;margin:12px 0}.label{color:#a9abb4;font-size:13px}
+.balance{font-size:31px;font-weight:bold;color:#ffbd26;margin:9px 0}#status{color:#ffc447;font-size:14px;line-height:1.6}
+.dot{display:inline-block;width:8px;height:8px;background:#737987;border-radius:50%;margin-inline-end:7px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#0e1118;border-radius:12px;padding:13px;min-height:76px}
+.value{font-size:18px;font-weight:bold;margin-top:8px;overflow-wrap:anywhere}
+button{width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:bold;margin-top:10px}
+#start{background:linear-gradient(90deg,#ffd45d,#ff9d00);color:#17110a}#stop{background:#292e39;color:white}
+button:disabled{opacity:.4}.note{font-size:12px;color:#a9abb4;line-height:1.9}.footer{text-align:center;color:#6f7480;font-size:11px;margin-top:18px}
+</style></head>
+<body><main>
+<header><div class="coin"><span>₿</span></div><h1>Bbitcoin</h1><div class="sub">BBC · PROOF OF WORK DEMO</div></header>
+<section class="card"><div class="label">پاداش آزمایشی همین اجرا</div><div class="balance"><span id="earned">0</span> BBC</div><div id="status"><span class="dot"></span>استخراج متوقف است</div></section>
+<section class="card"><div class="grid">
+<div class="stat"><div class="label">سرعت تقریبی</div><div class="value" id="rate">0 H/s</div></div>
+<div class="stat"><div class="label">بلوک‌های آزمایشی</div><div class="value" id="blocks">0</div></div>
+<div class="stat"><div class="label">تعداد تلاش‌ها</div><div class="value" id="attempts">0</div></div>
+<div class="stat"><div class="label">پاداش نمایشی هر بلوک</div><div class="value">50 BBC</div></div>
+</div><button id="start">▶ شروع استخراج</button><button id="stop" disabled>■ توقف استخراج</button></section>
+<section class="card note">این نسخه نمایشی و محلی است. اعداد BBC فقط در همین اجرای برنامه محاسبه می‌شوند؛ ارز قابل معامله یا قابل انتقال نیستند و به شبکهٔ عمومی وصل نیست. استخراج در پس‌زمینه ادامه پیدا نمی‌کند.</section>
+<div class="footer">BBITCOIN · BBC · EDUCATIONAL DEMO</div></main>
+<script>
+let running=false,attempts=0,blocks=0,earned=0,started=0,timer=null;
+const $=id=>document.getElementById(id);
+async function sha256(text){
+ const data=new TextEncoder().encode(text);
+ const hash=await crypto.subtle.digest('SHA-256',data);
+ return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function mine(){
+ if(!running)return;
+ const batchStart=performance.now();
+ for(let i=0;i<20&&running;i++){
+  const hash=await sha256('Bbitcoin|'+blocks+'|'+attempts+'|'+Date.now()+'|'+Math.random());
+  attempts++;
+  if(hash.startsWith('000')){
+   blocks++;earned+=50;
+   $('blocks').textContent=blocks;
+   $('earned').textContent=earned;
+   $('status').innerHTML='<span class="dot" style="background:#ffbd26"></span>بلوک آزمایشی پیدا شد';
+  }
+ }
+ $('attempts').textContent=attempts.toLocaleString();
+ $('rate').textContent=Math.round(attempts/Math.max((performance.now()-started)/1000,.1))+' H/s';
+ if(running)timer=setTimeout(mine,0);
+}
+$('start').onclick=()=>{if(running)return;running=true;started=performance.now();$('start').disabled=true;$('stop').disabled=false;$('status').innerHTML='<span class="dot" style="background:#55d68b"></span>استخراج آزمایشی فعال است';mine();};
+$('stop').onclick=()=>{running=false;clearTimeout(timer);$('start').disabled=false;$('stop').disabled=true;$('status').innerHTML='<span class="dot"></span>استخراج متوقف شد';};
+</script></body></html>
